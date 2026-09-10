@@ -1,6 +1,11 @@
-const { kv } = require('@vercel/kv');
+const { createClient } = require('@supabase/supabase-js');
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -15,7 +20,11 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    await kv.sadd('subscribers', email);
+    const { error } = await supabase
+      .from('subscribers')
+      .upsert({ email: email }, { onConflict: 'email', ignoreDuplicates: true });
+
+    if (error) throw error;
     return res.status(200).json({ ok: true });
   } catch (err) {
     console.error('subscribe error', err);
