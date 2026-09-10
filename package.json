@@ -1,0 +1,7 @@
+{
+  "name": "mai-luem-na",
+  "private": true,
+  "dependencies": {
+    "@vercel/kv": "^3.0.0"
+  }
+}

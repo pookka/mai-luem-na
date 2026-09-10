@@ -950,9 +950,29 @@
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       var lang = root.dataset.currentLang || 'th';
-      msg.textContent = lang === 'th' ? 'ขอบคุณค่ะ เดี๋ยวแจ้งให้ทราบทันทีที่มีเครื่องมือใหม่' : "Thanks — we'll let you know as soon as something new launches.";
-      msg.hidden = false;
-      form.reset();
+      var input = form.querySelector('input[type="email"]');
+      var email = input ? input.value.trim() : '';
+      var submitBtn = form.querySelector('button[type="submit"]');
+      if (submitBtn) submitBtn.disabled = true;
+
+      fetch('/api/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email })
+      })
+        .then(function (r) { return r.ok ? r.json() : Promise.reject(r); })
+        .then(function () {
+          msg.textContent = lang === 'th' ? 'ขอบคุณค่ะ เดี๋ยวแจ้งให้ทราบทันทีที่มีเครื่องมือใหม่' : "Thanks — we'll let you know as soon as something new launches.";
+          msg.hidden = false;
+          form.reset();
+        })
+        .catch(function () {
+          msg.textContent = lang === 'th' ? 'ขออภัยค่ะ ลองใหม่อีกครั้งนะคะ' : 'Something went wrong — please try again.';
+          msg.hidden = false;
+        })
+        .finally(function () {
+          if (submitBtn) submitBtn.disabled = false;
+        });
     });
   }
 })();
