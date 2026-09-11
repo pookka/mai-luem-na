@@ -951,6 +951,10 @@
     if (emailInput) {
       emailInput.placeholder = lang === 'th' ? 'อีเมลของคุณ' : 'Your email';
     }
+    var ideaInput = document.querySelector('.idea-form input');
+    if (ideaInput) {
+      ideaInput.placeholder = lang === 'th' ? 'เช่น ตัวช่วยจดบันทึกรายจ่าย' : 'e.g. an expense-tracking tool';
+    }
     root.setAttribute('lang', lang === 'th' ? 'th' : 'en');
     root.dataset.currentLang = lang;
   }
