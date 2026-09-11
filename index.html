@@ -920,9 +920,14 @@
   </div>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (function () {
   var root = document.documentElement;
+
+  var SUPABASE_URL = 'https://vvnnhyktainaoetwnhzx.supabase.co';
+  var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ2bm5oeWt0YWluYW9ldHduaHp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwOTYxNjMsImV4cCI6MjEwMzY3MjE2M30.S_KaRKtnI4litQ52tN1iJ31QBGkC0f7fN4gHO0Tj9qs';
+  var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   function apply(lang) {
     document.querySelectorAll('.i18n-th').forEach(function (el) { el.hidden = lang !== 'th'; });
@@ -947,12 +952,31 @@
   var form = document.getElementById('signupForm');
   var msg = document.getElementById('signupMsg');
   if (form) {
-    form.addEventListener('submit', function (e) {
+    form.addEventListener('submit', async function (e) {
       e.preventDefault();
       var lang = root.dataset.currentLang || 'th';
-      msg.textContent = lang === 'th' ? 'ขอบคุณค่ะ เดี๋ยวแจ้งให้ทราบทันทีที่มีเครื่องมือใหม่' : "Thanks — we'll let you know as soon as something new launches.";
+      var emailInput = form.querySelector('input[type="email"]');
+      var email = emailInput.value.trim();
+      var submitBtn = form.querySelector('button');
+
+      submitBtn.disabled = true;
+
+      var result = await supabase.from('subscribers').insert({ email: email });
+      var error = result.error;
+
+      submitBtn.disabled = false;
+
+      if (error) {
+        if (error.code === '23505') {
+          msg.textContent = lang === 'th' ? 'อีเมลนี้สมัครไว้แล้วค่ะ' : 'This email is already subscribed.';
+        } else {
+          msg.textContent = lang === 'th' ? 'เกิดข้อผิดพลาด ลองใหม่อีกครั้งนะคะ' : 'Something went wrong, please try again.';
+        }
+      } else {
+        msg.textContent = lang === 'th' ? 'ขอบคุณค่ะ เดี๋ยวแจ้งให้ทราบทันทีที่มีเครื่องมือใหม่' : "Thanks — we'll let you know as soon as something new launches.";
+        form.reset();
+      }
       msg.hidden = false;
-      form.reset();
     });
   }
 })();
